@@ -23,3 +23,13 @@ This creates a parser that can either match "fun" or "var".
 ```c++
 auto parser = Choice(Expect("fun"), Expect("var"));
 ```
+
+### Maybe
+
+The maybe parser takes in a single sub-parser and makes its success optional. On success returns the sub-parser, otherwise returns a std::nullopt without a failure.
+
+The below parser will not fail if "fun" is not next in the source stream.
+
+```c++
+auto parser = Maybe(Expect("fun"));
+```

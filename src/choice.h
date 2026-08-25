@@ -11,13 +11,14 @@
 
 // clang-format off
 
-/** @brief Attempt a collection of sub-parsers. The first to succeed is returned. If none of them succeed the whole rule fails.
- *  @tparam Ps Sub-parser parameter pack.
- *  @param parsers Collection of sub-parsers.
+/** @brief   Attempt a collection of sub-parsers. The first to succeed is returned. If none of them
+ *           succeed the whole rule fails.
+ *  @tparam  Ps Sub-parser parameter pack.
+ *  @param   parsers Collection of sub-parsers.
  *  @returns A callable parser returning the matched token or a parse failure.
  */
 template <typename... Ps>
-auto Choice(Ps&&... parsers) -> decltype(auto)
+auto Choice(Ps... parsers) -> decltype(auto)
 {
 	return Parser
 	{

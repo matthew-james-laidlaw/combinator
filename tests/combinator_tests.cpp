@@ -2,6 +2,7 @@
 
 #include <choice.h>
 #include <expect.h>
+#include <maybe.h>
 #include <parser.h>
 #include <state.h>
 
@@ -165,6 +166,37 @@ TEST(ChoiceTests, NoMatches)
 
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error(), "expected one of ['x', 'y', 'z'] but got 'a'.");
+}
+
+TEST(MaybeTests, Matches)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Maybe(Expect("a"));
+    auto result = parser(state);
+
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(*result);
+    EXPECT_EQ(result->value(), "a");
+}
+
+TEST(MaybeTests, DoesntMatch)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Maybe(Expect("x"));
+    auto result = parser(state);
+
+    ASSERT_TRUE(result);
+    ASSERT_FALSE(*result);
 }
 
 // clang-format on
