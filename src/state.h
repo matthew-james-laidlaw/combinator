@@ -35,4 +35,19 @@ public:
         }
         return m_source.subspan(1);
     }
+
+    friend auto operator==(const State& a, const State& b) -> bool
+    {
+        if (a.m_source.size() != b.m_source.size()) {
+            return false;
+        }
+
+        for (size_t i = 0; i < a.m_source.size(); ++i) {
+            if (a.m_source[i] != b.m_source[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 };

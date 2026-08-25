@@ -112,6 +112,43 @@ TEST(ExpectTests, Unexpected)
     ASSERT_EQ(result.Error(), "unexpected token: expected 'z' but got 'a'.");
 }
 
+TEST(ExpectTests, ExpectAdvancesStateOnSuccess)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Expect("a");
+    auto result = parser(state);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), "a");
+
+    auto expected_source = std::vector<std::string>
+    {
+        "b", "c"
+    };
+    auto expected_state = State(expected_source);
+    ASSERT_EQ(result.Rest(), expected_state);
+}
+
+TEST(ExpectTests, ExpectDoesNotAdvanceStateOnFailure)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Expect("z");
+    auto result = parser(state);
+
+    ASSERT_FALSE(result.Ok());
+    ASSERT_EQ(result.Rest(), state);
+}
+
 TEST(ChoiceTests, MatchFirstItem)
 {
     auto source = std::vector<std::string>
