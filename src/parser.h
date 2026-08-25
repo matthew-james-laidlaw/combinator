@@ -14,6 +14,8 @@ private:
 
 public:
 
+    using ResultType = std::invoke_result_t<F, State&>;
+
     Parser(F parser, std::string name)
         : m_parser(parser), m_name(name)
     {}

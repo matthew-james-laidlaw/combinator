@@ -10,14 +10,14 @@
 
 /** @brief Optionally runs a sub-parser, succeeding even if the sub-parser fails.
  *  @param parser The sub-parser to run.
- *  @returns A callable parser that returns a matched token on success, or std::nullopt.
+ *  @returns A callable parser that returns a matched item on success, or std::nullopt.
  */
-template <typename F>
-auto Maybe(Parser<F> parser) -> decltype(auto)
+template <typename P>
+auto Maybe(P parser) -> decltype(auto)
 {
     return Parser
     {
-        [parser](State& state) -> std::expected<std::optional<std::string>, std::string>
+        [parser](State& state) -> std::expected<std::optional<typename P::ResultType>, std::string>
         {
             auto result = parser(state);
             if (!result)

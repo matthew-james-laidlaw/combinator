@@ -13,18 +13,23 @@
 
 /** @brief   Attempt a collection of sub-parsers. The first to succeed is returned. If none of them
  *           succeed the whole rule fails.
- *  @tparam  Ps Sub-parser parameter pack.
- *  @param   parsers Collection of sub-parsers.
- *  @returns A callable parser returning the matched token or a parse failure.
+ *  @param   first At least one parser is required
+ *  @param   rest Variadic amount of other parsers
+ *  @returns A callable parser returning the matched item or a parse failure.
  */
-template <typename... Ps>
-auto Choice(Ps... parsers) -> decltype(auto)
+template <typename P, typename... Ps>
+auto Choice(P first, Ps... rest) -> decltype(auto)
 {
+	static_assert(
+		(std::same_as<typename P::ResultType, typename Ps::ResultType> && ...),
+		"choice parser requires all sub-parsers to have the same return type"
+	);
+
 	return Parser
 	{
-		[parsers...](State& state) -> std::expected<std::string, std::string>
+		[first, rest...](State& state) -> std::expected<typename P::ResultType, std::string>
 		{
-			for (auto const& p : { parsers... })
+			for (auto const& p : { first, rest... })
 			{
 				auto result = p(state);
 				if (result)
@@ -34,8 +39,9 @@ auto Choice(Ps... parsers) -> decltype(auto)
 			}
 
 			auto names = std::vector<std::string>();
-			names.reserve(sizeof...(parsers));
-			(names.push_back(parsers.Name()), ...);
+			names.reserve(sizeof...(Ps) + 1);
+			names.push_back(first.Name());
+			(names.push_back(rest.Name()), ...);
 
 			return std::unexpected(
 				std::format("expected one of ['{}'] but got '{}'.", Join(names, "', '"), state.Peek())
