@@ -3,6 +3,7 @@
 #include <parser.h>
 
 #include <expected>
+#include <format>
 #include <string>
 
 // clang-format off
