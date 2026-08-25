@@ -33,3 +33,13 @@ The below parser will not fail if "fun" is not next in the source stream.
 ```c++
 auto parser = Maybe(Expect("fun"));
 ```
+
+### Many
+
+The many parser takes in a single sub-parser rule and runs it until it fails, allowing for zero successes. The parser returns a list of results accumulated from each successful run.
+
+This parser will match the string "fun" until it stops showing up in the source stream.
+
+```c++
+auto parser = Many(Expect("fun"));
+```

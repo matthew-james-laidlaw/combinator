@@ -2,6 +2,7 @@
 
 #include <choice.h>
 #include <expect.h>
+#include <many.h>
 #include <maybe.h>
 #include <parser.h>
 #include <state.h>
@@ -238,6 +239,85 @@ TEST(MaybeTests, DoesntMatch)
 
     ASSERT_TRUE(result.Ok());
     ASSERT_FALSE(result.Value());
+}
+
+TEST(ManyTests, ManyMatchesZeroTimes)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Many(Expect("x"));
+    auto result = parser(state);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_TRUE(result.Value().empty());
+    ASSERT_EQ(result.Rest(), state);
+}
+
+TEST(ManyTests, ManyMatchesOnce)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Many(Expect("a"));
+    auto result = parser(state);
+
+    auto expected_source = std::vector<std::string>
+    {
+        "b", "c"
+    };
+    auto expected_state = State(expected_source);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), (std::vector<std::string>{ "a" }));
+    ASSERT_EQ(result.Rest(), expected_state);
+}
+
+TEST(ManyTests, ManyMatchesMoreThanOnce)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "a", "b"
+    };
+    auto state = State(source);
+
+    auto parser = Many(Expect("a"));
+    auto result = parser(state);
+
+    auto expected_source = std::vector<std::string>
+    {
+        "b"
+    };
+    auto expected_state = State(expected_source);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), (std::vector<std::string>{ "a", "a" }));
+    ASSERT_EQ(result.Rest(), expected_state);
+}
+
+TEST(ManyTests, ManyMatchesAll)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "a", "a"
+    };
+    auto state = State(source);
+
+    auto parser = Many(Expect("a"));
+    auto result = parser(state);
+
+    auto expected_source = std::vector<std::string>{};
+    auto expected_state = State(expected_source);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), (std::vector<std::string>{ "a", "a", "a" }));
+    ASSERT_EQ(result.Rest(), expected_state);
 }
 
 // clang-format on
