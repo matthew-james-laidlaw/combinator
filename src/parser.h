@@ -1,5 +1,6 @@
 #pragma once
 
+#include <result.h>
 #include <state.h>
 
 #include <expected>
@@ -11,7 +12,7 @@ class Parser
 {
 private:
 
-    using F = std::function<std::expected<T, std::string>(State&)>;
+    using F = std::function<Result<T>(const State&)>;
     F m_parser;
 
     std::string m_name;
@@ -22,7 +23,7 @@ public:
         : m_parser(parser), m_name(name)
     {}
 
-    auto operator()(State& state) const -> decltype(auto)
+    auto operator()(const State& state) const -> decltype(auto)
     {
         return m_parser(state);
     }

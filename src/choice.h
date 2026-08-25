@@ -27,12 +27,12 @@ auto Choice(Parser<T> first, Parser<Ts>... rest) -> decltype(auto)
 
 	return Parser<T>
 	{
-		[first, rest...](State& state) -> std::expected<T, std::string>
+		[first, rest...](State const& state) -> Result<T>
 		{
 			for (auto const& p : { first, rest... })
 			{
 				auto result = p(state);
-				if (result)
+				if (result.Ok())
 				{
 					return result;
 				}
@@ -43,9 +43,8 @@ auto Choice(Parser<T> first, Parser<Ts>... rest) -> decltype(auto)
 			names.push_back(first.Name());
 			(names.push_back(rest.Name()), ...);
 
-			return std::unexpected(
-				std::format("expected one of ['{}'] but got '{}'.", Join(names, "', '"), state.Peek())
-			);
+			auto msg = std::format("expected one of ['{}'] but got '{}'.", Join(names, "', '"), state.Peek());
+			return Result<T>::Failure(state, msg);
 		},
 		"choice"
 	};

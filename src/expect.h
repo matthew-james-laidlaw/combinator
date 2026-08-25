@@ -15,25 +15,25 @@
  */
 auto Expect(std::string expected) -> decltype(auto)
 {
+	using R = Result<std::string>;
 	return Parser<std::string>
 	{
-		[expected](State& state) -> std::expected<std::string, std::string>
+		[expected](State const& state) -> R
 		{
 			if (state.Done())
 			{
 				auto msg = std::format("unexpected end of source: expected '{}'.", expected);
-				return std::unexpected(msg);
+				return R::Failure(state, msg);
 			}
 
 			auto actual = state.Peek();
 			if (actual != expected)
 			{
 				auto msg = std::format("unexpected token: expected '{}' but got '{}'.", expected, actual);
-				return std::unexpected(msg);
+				return R::Failure(state, msg);
 			}
 
-			state.Advance();
-			return actual;
+			return R::Success(actual, state.Advance());
 		},
 		expected
 	};

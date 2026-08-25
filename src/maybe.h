@@ -15,16 +15,17 @@
 template <typename T>
 auto Maybe(Parser<T> parser) -> decltype(auto)
 {
+    using R = Result<std::optional<T>>;
     return Parser<std::optional<T>>
     {
-        [parser](State& state) -> std::expected<std::optional<T>, std::string>
+        [parser](State const& state) -> R
         {
             auto result = parser(state);
-            if (!result)
+            if (!result.Ok())
             {
-                return std::nullopt;
+                return R::Success(std::nullopt, state);
             }
-            return *result;
+            return R::Success(result.Value(), result.Rest());
         },
         "maybe"
     };

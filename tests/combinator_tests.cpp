@@ -12,11 +12,12 @@ TEST(StateTests, EmptyState)
 {
     auto state = State({});
     
-    EXPECT_TRUE(state.Done());
-    EXPECT_EQ(state.Peek(), "");
-    state.Advance();
-    EXPECT_TRUE(state.Done());
-    EXPECT_EQ(state.Peek(), "");
+    ASSERT_TRUE(state.Done());
+    ASSERT_EQ(state.Peek(), "");
+
+    auto new_state = state.Advance();
+    ASSERT_TRUE(new_state.Done());
+    ASSERT_EQ(new_state.Peek(), "");
 }
 
 TEST(StateTests, LastItemInState)
@@ -27,11 +28,12 @@ TEST(StateTests, LastItemInState)
     };
     auto state = State(source);
     
-    EXPECT_FALSE(state.Done());
-    EXPECT_EQ(state.Peek(), "a");
-    state.Advance();
-    EXPECT_TRUE(state.Done());
-    EXPECT_EQ(state.Peek(), "");
+    ASSERT_FALSE(state.Done());
+    ASSERT_EQ(state.Peek(), "a");
+    
+    auto new_state = state.Advance();
+    ASSERT_TRUE(new_state.Done());
+    ASSERT_EQ(new_state.Peek(), "");
 }
 
 TEST(StateTests, ManyItemsInState)
@@ -42,28 +44,30 @@ TEST(StateTests, ManyItemsInState)
     };
     auto state = State(source);
     
-    EXPECT_FALSE(state.Done());
-    EXPECT_EQ(state.Peek(), "a");
-    state.Advance();
-    EXPECT_FALSE(state.Done());
-    EXPECT_EQ(state.Peek(), "b");
+    ASSERT_FALSE(state.Done());
+    ASSERT_EQ(state.Peek(), "a");
+
+    auto new_state = state.Advance();
+    ASSERT_FALSE(new_state.Done());
+    ASSERT_EQ(new_state.Peek(), "b");
 }
 
 TEST(ParserTests, BasicParserTest)
 {
     auto parser = Parser<bool>
     {
-        [&](State& state) -> std::expected<bool, std::string>
+        [&](State const& state) -> Result<bool>
         {
-            return true;
+            return Result<bool>::Success(true, state);
         },
         "example"
     };
 
-    EXPECT_EQ(parser.Name(), "example");
+    ASSERT_EQ(parser.Name(), "example");
 
     auto empty_state = State({});
-    EXPECT_TRUE(parser(empty_state));
+    auto result = parser(empty_state);
+    ASSERT_TRUE(result.Ok());
 }
 
 TEST(ExpectTests, ExpectNormal)
@@ -77,8 +81,8 @@ TEST(ExpectTests, ExpectNormal)
     auto parser = Expect("a");
     auto result = parser(state);
 
-    ASSERT_TRUE(result);
-    EXPECT_EQ(*result, "a");
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), "a");
 }
 
 TEST(ExpectTests, ExpectOnEmptyState)
@@ -89,8 +93,8 @@ TEST(ExpectTests, ExpectOnEmptyState)
     auto parser = Expect("a");
     auto result = parser(state);
 
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.error(), "unexpected end of source: expected 'a'.");
+    ASSERT_FALSE(result.Ok());
+    ASSERT_EQ(result.Error(), "unexpected end of source: expected 'a'.");
 }
 
 TEST(ExpectTests, Unexpected)
@@ -104,8 +108,8 @@ TEST(ExpectTests, Unexpected)
     auto parser = Expect("z");
     auto result = parser(state);
 
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.error(), "unexpected token: expected 'z' but got 'a'.");
+    ASSERT_FALSE(result.Ok());
+    ASSERT_EQ(result.Error(), "unexpected token: expected 'z' but got 'a'.");
 }
 
 TEST(ChoiceTests, MatchFirstItem)
@@ -119,8 +123,8 @@ TEST(ChoiceTests, MatchFirstItem)
     auto parser = Choice(Expect("a"), Expect("y"), Expect("z"));
     auto result = parser(state);
 
-    ASSERT_TRUE(result);
-    ASSERT_EQ(*result, "a");
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), "a");
 }
 
 TEST(ChoiceTests, MatchMiddleItem)
@@ -134,8 +138,8 @@ TEST(ChoiceTests, MatchMiddleItem)
     auto parser = Choice(Expect("y"), Expect("a"), Expect("z"));
     auto result = parser(state);
 
-    ASSERT_TRUE(result);
-    ASSERT_EQ(*result, "a");
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), "a");
 }
 
 TEST(ChoiceTests, MatchLastItem)
@@ -149,8 +153,8 @@ TEST(ChoiceTests, MatchLastItem)
     auto parser = Choice(Expect("y"), Expect("z"), Expect("a"));
     auto result = parser(state);
 
-    ASSERT_TRUE(result);
-    ASSERT_EQ(*result, "a");
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), "a");
 }
 
 TEST(ChoiceTests, NoMatches)
@@ -164,8 +168,8 @@ TEST(ChoiceTests, NoMatches)
     auto parser = Choice(Expect("x"), Expect("y"), Expect("z"));
     auto result = parser(state);
 
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.error(), "expected one of ['x', 'y', 'z'] but got 'a'.");
+    ASSERT_FALSE(result.Ok());
+    ASSERT_EQ(result.Error(), "expected one of ['x', 'y', 'z'] but got 'a'.");
 }
 
 TEST(MaybeTests, Matches)
@@ -179,9 +183,9 @@ TEST(MaybeTests, Matches)
     auto parser = Maybe(Expect("a"));
     auto result = parser(state);
 
-    ASSERT_TRUE(result);
-    ASSERT_TRUE(*result);
-    EXPECT_EQ(result->value(), "a");
+    ASSERT_TRUE(result.Ok());
+    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(*result.Value(), "a");
 }
 
 TEST(MaybeTests, DoesntMatch)
@@ -195,8 +199,8 @@ TEST(MaybeTests, DoesntMatch)
     auto parser = Maybe(Expect("x"));
     auto result = parser(state);
 
-    ASSERT_TRUE(result);
-    ASSERT_FALSE(*result);
+    ASSERT_TRUE(result.Ok());
+    ASSERT_FALSE(result.Value());
 }
 
 // clang-format on

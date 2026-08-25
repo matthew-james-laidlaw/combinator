@@ -28,11 +28,11 @@ public:
         return m_source.front();
     }
 
-    auto Advance() -> void
+    auto Advance() const -> State
     {
         if (m_source.empty()) {
-            return;
+            return m_source;
         }
-        m_source = m_source.subspan(1);
+        return m_source.subspan(1);
     }
 };
