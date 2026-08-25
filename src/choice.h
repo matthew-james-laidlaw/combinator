@@ -17,17 +17,17 @@
  *  @param   rest Variadic amount of other parsers
  *  @returns A callable parser returning the matched item or a parse failure.
  */
-template <typename P, typename... Ps>
-auto Choice(P first, Ps... rest) -> decltype(auto)
+template <typename T, typename... Ts>
+auto Choice(Parser<T> first, Parser<Ts>... rest) -> decltype(auto)
 {
 	static_assert(
-		(std::same_as<typename P::ResultType, typename Ps::ResultType> && ...),
+		(std::same_as<T, Ts> && ...),
 		"choice parser requires all sub-parsers to have the same return type"
 	);
 
-	return Parser
+	return Parser<T>
 	{
-		[first, rest...](State& state) -> std::expected<typename P::ResultType, std::string>
+		[first, rest...](State& state) -> std::expected<T, std::string>
 		{
 			for (auto const& p : { first, rest... })
 			{
@@ -39,7 +39,7 @@ auto Choice(P first, Ps... rest) -> decltype(auto)
 			}
 
 			auto names = std::vector<std::string>();
-			names.reserve(sizeof...(Ps) + 1);
+			names.reserve(sizeof...(Ts) + 1);
 			names.push_back(first.Name());
 			(names.push_back(rest.Name()), ...);
 

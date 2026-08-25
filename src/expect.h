@@ -15,7 +15,7 @@
  */
 auto Expect(std::string expected) -> decltype(auto)
 {
-	return Parser
+	return Parser<std::string>
 	{
 		[expected](State& state) -> std::expected<std::string, std::string>
 		{

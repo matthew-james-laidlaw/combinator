@@ -51,9 +51,9 @@ TEST(StateTests, ManyItemsInState)
 
 TEST(ParserTests, BasicParserTest)
 {
-    auto parser = Parser
+    auto parser = Parser<bool>
     {
-        [&](State& state) -> bool
+        [&](State& state) -> std::expected<bool, std::string>
         {
             return true;
         },

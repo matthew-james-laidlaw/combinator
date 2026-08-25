@@ -2,19 +2,21 @@
 
 #include <state.h>
 
+#include <expected>
+#include <functional>
 #include <string>
 
-template <typename F>
+template <typename T>
 class Parser
 {
 private:
 
+    using F = std::function<std::expected<T, std::string>(State&)>;
     F m_parser;
+
     std::string m_name;
 
 public:
-
-    using ResultType = std::invoke_result_t<F, State&>;
 
     Parser(F parser, std::string name)
         : m_parser(parser), m_name(name)

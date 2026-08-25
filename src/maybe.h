@@ -12,12 +12,12 @@
  *  @param parser The sub-parser to run.
  *  @returns A callable parser that returns a matched item on success, or std::nullopt.
  */
-template <typename P>
-auto Maybe(P parser) -> decltype(auto)
+template <typename T>
+auto Maybe(Parser<T> parser) -> decltype(auto)
 {
-    return Parser
+    return Parser<std::optional<T>>
     {
-        [parser](State& state) -> std::expected<std::optional<typename P::ResultType>, std::string>
+        [parser](State& state) -> std::expected<std::optional<T>, std::string>
         {
             auto result = parser(state);
             if (!result)
