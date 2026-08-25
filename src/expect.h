@@ -1,11 +1,11 @@
-// clang-format off
-
 #pragma once
 
 #include <parser.h>
 
 #include <expected>
 #include <string>
+
+// clang-format off
 
 /** @brief Primitive parser that expects a given string from the source. Advances the state on success.
  * @param expected The expected string.

@@ -1,10 +1,11 @@
-// clang-format off
-
 #include <gtest/gtest.h>
 
+#include <choice.h>
 #include <expect.h>
 #include <parser.h>
 #include <state.h>
+
+// clang-format off
 
 TEST(StateTests, EmptyState)
 {
@@ -104,6 +105,66 @@ TEST(ExpectTests, Unexpected)
 
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error(), "unexpected token: expected 'z' but got 'a'.");
+}
+
+TEST(ChoiceTests, MatchFirstItem)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Choice(Expect("a"), Expect("y"), Expect("z"));
+    auto result = parser(state);
+
+    ASSERT_TRUE(result);
+    ASSERT_EQ(*result, "a");
+}
+
+TEST(ChoiceTests, MatchMiddleItem)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Choice(Expect("y"), Expect("a"), Expect("z"));
+    auto result = parser(state);
+
+    ASSERT_TRUE(result);
+    ASSERT_EQ(*result, "a");
+}
+
+TEST(ChoiceTests, MatchLastItem)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Choice(Expect("y"), Expect("z"), Expect("a"));
+    auto result = parser(state);
+
+    ASSERT_TRUE(result);
+    ASSERT_EQ(*result, "a");
+}
+
+TEST(ChoiceTests, NoMatches)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Choice(Expect("x"), Expect("y"), Expect("z"));
+    auto result = parser(state);
+
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.error(), "expected one of ['x', 'y', 'z'] but got 'a'.");
 }
 
 // clang-format on
