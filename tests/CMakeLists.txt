@@ -1,0 +1,3 @@
+add_executable(combinator_tests combinator_tests.cpp)
+target_link_libraries(combinator_tests combinator GTest::gtest_main)
+gtest_discover_tests(combinator_tests)

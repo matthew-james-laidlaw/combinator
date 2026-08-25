@@ -1,0 +1,34 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: MacOS
+            generator: Xcode
+          - os: ubuntu-latest
+            name: Linux
+            generator: Ninja Multi-Config
+          - os: windows-latest
+            name: Windows
+            generator: Visual Studio 18 2026
+    
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+    
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -G "${{ matrix.generator }}"
+
+      - name: Build CMake
+        run: cmake --build build --config Release
+
+      - name: Run tests
+        run: ctest --test-dir build -C Release --output-on-failure
