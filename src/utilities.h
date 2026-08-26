@@ -2,7 +2,7 @@
 
 #include <string>
 
-auto Join(const auto& strings, std::string separator) -> std::string
+inline auto Join(const auto& strings, std::string separator) -> std::string
 {
     auto result = std::string();
 

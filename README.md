@@ -43,3 +43,13 @@ This parser will match the string "fun" until it stops showing up in the source 
 ```c++
 auto parser = Many(Expect("fun"));
 ```
+
+### Fold
+
+The fold parser takes in two parsers and attempts them both in sequence, only taking the result of last parser though. The first parser must succeed, though its output is ignored
+
+The following parser expects the string "f(x)=5", but only returns the literal value 5.
+
+```c++
+auto parser = Fold(Expect("f(x)="), Expect("5"));
+```

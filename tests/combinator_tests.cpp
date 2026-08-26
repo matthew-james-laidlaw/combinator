@@ -2,6 +2,7 @@
 
 #include <choice.h>
 #include <expect.h>
+#include <fold.h>
 #include <many.h>
 #include <maybe.h>
 #include <parser.h>
@@ -317,6 +318,58 @@ TEST(ManyTests, ManyMatchesAll)
 
     ASSERT_TRUE(result.Ok());
     ASSERT_EQ(result.Value(), (std::vector<std::string>{ "a", "a", "a" }));
+    ASSERT_EQ(result.Rest(), expected_state);
+}
+
+TEST(FoldTests, FoldLeftmostFails)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Fold(Expect("b"), Expect("b"));
+    auto result = parser(state);
+
+    ASSERT_FALSE(result.Ok());
+    ASSERT_EQ(result.Rest(), state);
+}
+
+TEST(FoldTests, FoldRightmostFails)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Fold(Expect("a"), Expect("c"));
+    auto result = parser(state);
+
+    auto expected_source = std::vector<std::string>{ "b", "c" };
+    auto expected_state = State(expected_source);
+
+    ASSERT_FALSE(result.Ok());
+    ASSERT_EQ(result.Rest(), expected_state);
+}
+
+TEST(FoldTests, BothSucceed)
+{
+    auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Fold(Expect("a"), Expect("b"));
+    auto result = parser(state);
+
+    auto expected_source = std::vector<std::string>{ "c" };
+    auto expected_state = State(expected_source);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), "b");
     ASSERT_EQ(result.Rest(), expected_state);
 }
 
