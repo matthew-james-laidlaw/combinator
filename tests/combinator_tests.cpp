@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 
-#include <choice.h>
-#include <expect.h>
-#include <fold.h>
-#include <many.h>
-#include <maybe.h>
 #include <parser.h>
+#include <parsers/choice.h>
+#include <parsers/combine.h>
+#include <parsers/expect.h>
+#include <parsers/fold.h>
+#include <parsers/many.h>
+#include <parsers/maybe.h>
 #include <state.h>
 
 // clang-format off
@@ -370,6 +371,25 @@ TEST(FoldTests, BothSucceed)
 
     ASSERT_TRUE(result.Ok());
     ASSERT_EQ(result.Value(), "b");
+    ASSERT_EQ(result.Rest(), expected_state);
+}
+
+TEST(CombineTests, Success)
+{
+        auto source = std::vector<std::string>
+    {
+        "a", "b", "c"
+    };
+    auto state = State(source);
+
+    auto parser = Combine(Expect("a"), Expect("b"));
+    auto result = parser(state);
+
+    auto expected_source = std::vector<std::string>{ "c" };
+    auto expected_state = State(expected_source);
+
+    ASSERT_TRUE(result.Ok());
+    ASSERT_EQ(result.Value(), ({ "a", "b" }));
     ASSERT_EQ(result.Rest(), expected_state);
 }
 

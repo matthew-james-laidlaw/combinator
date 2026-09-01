@@ -35,6 +35,20 @@ public:
         return Result(std::nullopt, rest, error);
     }
 
+    Result(const Result& other)
+        : Result(other.m_value, other.m_rest, other.m_error)
+    {}
+
+    auto operator=(const Result& other) -> Result&
+    {
+        if (&other != this) {
+            m_value = other.m_value;
+            m_rest = other.m_rest;
+            m_error = other.m_error;
+        }
+        return *this;
+    }
+
     auto Ok() const -> bool
     {
         return static_cast<bool>(m_value);
